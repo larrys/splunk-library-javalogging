@@ -6,12 +6,10 @@
 package com.splunk.logging.serialization;
 
 import com.google.gson.*;
-import com.splunk.logging.EventBodySerializer;
 import com.splunk.logging.HttpEventCollectorEventInfo;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class EventInfoTypeAdapter implements JsonSerializer<HttpEventCollectorEventInfo> {
@@ -30,7 +28,12 @@ public class EventInfoTypeAdapter implements JsonSerializer<HttpEventCollectorEv
         // Always put a message, even if it's empty.
         try {
             // TODO: Move to JsonParser.parseString (see note above)
-            event.put("message", parser.parse(src.getMessage()));
+            JsonElement parsed = parser.parse(src.getMessage());
+            if(parsed instanceof JsonNull && !src.getMessage().isEmpty()) {
+                event.put("message", src.getMessage());
+            } else {
+                event.put("message", parsed);
+            }
         } catch (JsonSyntaxException e) {
             event.put("message", src.getMessage());
         }
